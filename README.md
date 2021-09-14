@@ -100,5 +100,5 @@ Cons:
 ```
 - Connector grabs all the transactions for a given user_id and merchant_id. Additionally it grabs the global_merchant_spent_amount
 - It uses the formula to calculate the percentile : 
- sum(all transactions) / global_merchant_spent_amount
+ sum(all transactions for a user_id and merchant_id) / global_merchant_spent_amount
 - It stores the percentile in the DB
