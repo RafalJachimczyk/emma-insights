@@ -102,3 +102,21 @@ Cons:
 - It uses the formula to calculate the percentile : 
  sum(all transactions for a user_id and merchant_id) / global_merchant_spent_amount
 - It stores the percentile in the DB
+
+
+# Code structure & architcture
+
+For the purpose of this demo/prototype phase I'm storing all the code in the "monorepo" structure. For the production ready system I would split apart all the microservices in separate repositories. 
+
+I'll try to use hexagonal design as much as possible. Also starting with TDD. My first task is to work on the domain/business logic of the Insights Connector. That's the heart of the task and would like to get down to it first. 
+
+Using jest as a testing framework, as it has all the features that I will need. And I like it more over Mocha+Chai. 
+
+## Insights Connector
+
+
+
+### TODO:
+- Convert to typescript
+- Add coverage report
+- Add Linter / Prettier

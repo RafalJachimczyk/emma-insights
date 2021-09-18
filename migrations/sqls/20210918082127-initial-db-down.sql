@@ -1,0 +1,3 @@
+DROP TABLE IF EXISTS public."Users" CASCADE;
+DROP TABLE IF EXISTS public."Merchants" CASCADE;
+DROP TABLE IF EXISTS public."Transactions" CASCADE;
