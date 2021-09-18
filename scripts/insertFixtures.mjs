@@ -9,8 +9,8 @@ import { generateUsers, generateMerchants, generateTransactions } from './genera
 
 dotenv.config();
 
-const users = await generateUsers(1000);
-const merchants = await generateMerchants(500);
+const users = await generateUsers(1000000);
+const merchants = await generateMerchants(500000);
 
 var usersPrepared = users.map((user) => {
     return [user.id, user.first_name, user.last_name]
@@ -71,7 +71,7 @@ const insertTransactions = async (batchSize, batchNumber, users, merchants, bar)
 
 const bar = new cliProgress.SingleBar({});
 
-await insertTransactions(1000, 1000, users, merchants, bar);
+await insertTransactions(1000, 100000, users, merchants, bar);
 
 
 console.log(`Done! 🎉`);
