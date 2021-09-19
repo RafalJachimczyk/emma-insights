@@ -47,46 +47,124 @@ The logic of that function is to add all transactions for a given:
 
 So that we end up with a daily amount spent by a given user at a given merchant. 
 
+Pre-computing daily amounts massively speeds up the percentile calculations, as will be shown in the **Playing with big data** section below. 
+
 # Assumptions 
 - We don't do massive data loads on the production database. The way the trigger is structured causes slower INSERTS on the Transaction table, as the trigger is executed on each INSERT. Instead the API might be using a read replica. 
 - We do not need fine grained time/date periods. Calculation granularity is set to be a day (e.g. we can compare user insights for a given day, but we can't select a particular time periods within a day). It's probably fair to say that we (or our users) don't want to be comparing themselves to others every hour. Daily is good enough. 
 - Insights Database stores daily amounts.
 - Insights API can be asked for insights between days. 
 
-# De-normalised table schemas
+# De-normalised table schema
 
 **The table schema for user based insights**
-
 
 | Field name | Type | Example | Comments |
 |------------|------|---------|----------|
 | user_id | uuid | fd92fb65-cb63-41a0-a85d-116b83548d29|
 | merchant_id | uuid | b62cfe89-4346-4e27-b303-6c5268e77c83|
 | date | date | 2021-09-13 | We aggregate insights daily|
-| user_merchant_spent_amount | big float | 11421.56 | Sum of all received transactions for a given user |
-| percentile_spent | small float | 0.03 | Percentile of all transactions for given user and merchant vs global amount spent at this merchant |
+| amount | number | 11421.56 | Sum of all received transactions for a given user |
 
-# Postgres optimalizations #
+
+# Project setup
+
+## Project layout
+
+`./migrations` - contains database initialisation scripts and SQL for db-migrate
+`./scripts` - fixture data generation scripts
+`./src/domain` - code containing business/domain logic
+`./src/adapters` - adapters to provide connectivity with databases etc.
+`./.env` - configuration values
+`./database.json` - `db-migrate` config
+`./docker-compose.yaml` - Docker compose setup with database and API service definitions
+`./jest.config.js` - Using jest for testing - here's it's config (i.e. automocks off)
+`./postgresql.config` - We're overriding some of the PostgreSQL default config values for better IO performance. Optimised for server with 16GB of ram like my machine. Fine tune if your's is different.
+`./QUERRIES.md` - A notebook I have used to write down my SQL queries
+
+## Application initialisation
+
+Below are the required steps to prepare the app to run and to be tested.
+
+- `npm i` - installs node modules
+- `docker-compose up` - Starts up the application (i.e. PostgresSQL database and the API)
+- `npm run db:create` - Creates the database
+- `npm run db:up` - Initialises the database with required schemas, triggers etc
+
+All this would ensure the app is ready for further steps.
+
+# Playing with big data
+
+It's important to simulate the environment in which our Insights API will operate. In the discovery phase of the project we'll create a set of data that Emma operates on, in an SQL (presumeably relational) database. All this before we start writing any code - to ensure our assumptions are correct (specifically around app scalability)
+
+For that we need:
+- 1,000,000 Users
+- 500,000 Merchants
+- 1,000,000,000 Transactions
+
+This repo contains a script generating the above and inserting it into our database. It's based on [mocker-data-generator](https://www.npmjs.com/package/mocker-data-generator) npm module. The only caveat is that it would take a vary long time to insert 1 billion of transactions into a database (especially on my 2012 MacBook Air) and it would also consime huge amount of disk space. So for the purpose of this exercise we're reducing amount of transactions to 10 milion. We should be able to make a reasonable good predictions using this amount - and see differences between optimised and unoptimised queries/tables. 
+
+The script genrates realistic data for the User <-> Transaction <-> Merchant model, together with relations between these. It then inserts these into our DB. 
+
+Note: When Transactions are INSERTed, the trigger function called `insert_daily_insight()` is executed. 
+
+Run `npm run generate:fixtures` to insert A LOT of records into your DB. It will take a moment to insert. 
+
+Once you're done we can take a look at the below queries:
+
+`SELECT * FROM public."InsightsDaily" ORDER BY date DESC LIMIT 10;`
+
+Here's the result of a query on our pre-aggregated InsightsDaily table. Take a note of one of the UUIDs for a user, and then run the below queries: 
+
+```
+SELECT
+SUM(t.amount) total_amount,
+PERCENT_RANK() over (
+ORDER BY SUM(t.amount)
+) percentile_rank,
+t.user_id,
+t.merchant_id
+FROM public."Transactions" t
+WHERE t.user_id = '4a91e5b1-f676-545f-9e38-d6e08139c3c2'
+GROUP BY t.user_id, t.merchant_id
+ORDER BY percentile_rank DESC;
+```
+
+```
+SELECT
+SUM(i.amount) total_amount,
+PERCENT_RANK() over (
+ORDER BY SUM(i.amount)
+) percentile_rank,
+i.user_id,
+i.merchant_id
+FROM public."InsightsDaily" i
+WHERE i.user_id = '4a91e5b1-f676-545f-9e38-d6e08139c3c2'
+GROUP BY i.user_id, i.merchant_id
+ORDER BY percentile_rank DESC;
+```
+
+Take a note on the response time from postgres for each of the queries. In my case (10 milion records) the first query responds in ~800 ms. The second one, based on pre-aggregated daily amounts responds in ~70 ms. That's an order of magnitude better - pretty good!
 
 # Further optimalizations possible #
 
+- Add additional index on InsightsDaily
 - Calculate monthly totals
 - Partition table by months
 
-
 # Code structure & architcture
 
-For the purpose of this demo/prototype phase I'm storing all the code in the "monorepo" structure. For the production ready system I would split apart all the microservices in separate repositories. 
+I'll try to use hexagonal design (ports&adapters) as much as possible. Also starting with TDD. 
 
-I'll try to use hexagonal design as much as possible. Also starting with TDD. My first task is to work on the domain/business logic of the Insights Connector. That's the heart of the task and would like to get down to it first. 
+The Insights API will contain the below layers
+- HTTP - to serve the requests
+- Postgres Client - to establish DB connection
+
+Since most of the hard work would be done by the Database and triggers the code will be really simple and contain almost no business logic. 
+
+The Insights API will intentionally only return essential data, and the Db layer code will not perform ANY Joins. It will be down to client to obtain User and Merchant data from the respective APIs (out of scope for this exercise).
 
 Using jest as a testing framework, as it has all the features that I will need. And I like it more over Mocha+Chai. 
 
-## Insights Connector
-
-
-
 ### TODO:
-- Convert to typescript
-- Add coverage report
 - Add Linter / Prettier
