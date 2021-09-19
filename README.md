@@ -30,40 +30,28 @@ The API would be probably called by some machine process (e.g. aggregator), whic
 
 # Proposal
 
-The solution I'm proposing is based on Kafka message streaming. At the end of the execrcise we'll have two Microservices/APIs:
-- Transactions API
-- Insights API
+~~The solution I'm proposing is based on Kafka message streaming~~. 
 
-We'll also end up with two separate databases. The goal is to not interfere with the business domain of the Transactions API. It does one job and does it well - it enables clients to POST and (pressumably) GET transactions from that API. For this demo I'm not going to implement GET method on that API.
+Retrieving/querying large amounts of data in a normalised and relational databases is very heavy on the database I/O. The plan is to denormalise the database for the purposes of the Insights API, so that we only query for the information that we need and nothing more. 
 
-The Transactions Database stores transactions only. The Insight database contains two tables described below. 
+The initial proposal is to create a separate de-normalised table that stores insights. I was originally planning to build the service around kafka streams, where messages would be picked by a separate microservice and store the de-normalised data in separate database.
 
-The Insights API will only serve the insights.
+However, after an email exchange with Antonio I decided to go for another, sipler approach. Use the same database, but a new de-normalised table. 
 
-There will be decoupling layer between the Kafka topics and SQL databases (Connectors which consume messages, process and store in DBs). This would ensure that databases are not overloaded with write requests. Kafka would be the crucial element of the system and we would need to take a good care to scale it appropriately.
+Instead of using kafka streams to process the data that needs to be stored in Insights database, we'll use triggers that are executed when and INSERT query is performed on Transactions table. Trigger function would pick up a Transaction record and execute an UPSERT query on Insights table. 
 
-The high level diagram (Component diagram in C4 terminology) looks like this:
+The logic of that function is to add all transactions for a given:
+- user_id
+- merchant_id
+- date
 
-![C4 Component Diagram](c4.png)
-
-This architecture let's us scale each element separately. Obviously in this early stage of the prototype it's hard to say which parts would be the onses hardest hit - but we should be at least able to scale them up later (assuming good observability!).
-
-Pros: 
-- We can scale each component separately
-- Existing database is not amended
-- We're not establishing a "backdoor" connection to Transactions SQL database (and we should not be if we want a proper microservice architecture).
-- We will not need the automated batch jobs to generate reports. The Insights service would be sufficiently performant to serve the insights directly to the users. 
-
-Cons:
-- We're sacrificing data consisetncy i.e. the system is eventually consitent.
-- The system complexity grows. We're having to manage a few components. 
-
-
+So that we end up with a daily amount spent by a given user at a given merchant. 
 
 # Assumptions 
+- We don't do massive data loads on the production database. The way the trigger is structured causes slower INSERTS on the Transaction table, as the trigger is executed on each INSERT. Instead the API might be using a read replica. 
 - We do not need fine grained time/date periods. Calculation granularity is set to be a day (e.g. we can compare user insights for a given day, but we can't select a particular time periods within a day). It's probably fair to say that we (or our users) don't want to be comparing themselves to others every hour. Daily is good enough. 
-- Insights Database stores daily amounts
-- Insights API can be asked for insights between days. API would do the aggregations and summarise the totals and percentiles. 
+- Insights Database stores daily amounts.
+- Insights API can be asked for insights between days. 
 
 # De-normalised table schemas
 
@@ -78,30 +66,12 @@ Cons:
 | user_merchant_spent_amount | big float | 11421.56 | Sum of all received transactions for a given user |
 | percentile_spent | small float | 0.03 | Percentile of all transactions for given user and merchant vs global amount spent at this merchant |
 
+# Postgres optimalizations #
 
-**A schema for merchant totals**
+# Further optimalizations possible #
 
-| Field name | Type | Example | Comments |
-|------------|------|---------|----------|
-| merchant_id | uuid | b62cfe89-4346-4e27-b303-6c5268e77c83 | Name of the merchant|
-| global_merchant_spent_amount | big float | 8435345.23|
-
-# Insights Connector algorithm
-
-- A new transaction is picked up by the Insights Connector
-
-```
-{ 
-    user_id: xyz,
-    merchant_id: abc,
-    amount: 10.99,
-    date: '2021-09-14'
-}
-```
-- Connector grabs all the transactions for a given user_id and merchant_id. Additionally it grabs the global_merchant_spent_amount
-- It uses the formula to calculate the percentile : 
- sum(all transactions for a user_id and merchant_id) / global_merchant_spent_amount
-- It stores the percentile in the DB
+- Calculate monthly totals
+- Partition table by months
 
 
 # Code structure & architcture
