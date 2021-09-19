@@ -104,7 +104,7 @@ For that we need:
 
 This repo contains a script generating the above and inserting it into our database. It's based on [mocker-data-generator](https://www.npmjs.com/package/mocker-data-generator) npm module. The only caveat is that it would take a vary long time to insert 1 billion of transactions into a database (especially on my 2012 MacBook Air) and it would also consime huge amount of disk space. So for the purpose of this exercise we're reducing amount of transactions to 10 milion. We should be able to make a reasonable good predictions using this amount - and see differences between optimised and unoptimised queries/tables. 
 
-The script genrates realistic data for the User <-> Transaction <-> Merchant model, together with relations between these. It then inserts these into our DB. 
+The script genrates realistic data for the `User` <-> `Transaction` <-> `Merchant` model, together with relations between these. It then inserts these into our DB. 
 
 Note: When Transactions are INSERTed, the trigger function called `insert_daily_insight()` is executed. 
 
