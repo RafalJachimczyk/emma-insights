@@ -64,23 +64,23 @@ Pre-computing daily amounts massively speeds up the percentile calculations, as 
 | user_id | uuid | fd92fb65-cb63-41a0-a85d-116b83548d29|
 | merchant_id | uuid | b62cfe89-4346-4e27-b303-6c5268e77c83|
 | date | date | 2021-09-13 | We aggregate insights daily|
-| amount | number | 11421.56 | Sum of all received transactions for a given user |
+| amount | number | 11421.56 | Sum of all received transactions for a given user, merchant and a day |
 
 
 # Project setup
 
 ## Project layout
 
-`./migrations` - contains database initialisation scripts and SQL for db-migrate
-`./scripts` - fixture data generation scripts
-`./src/domain` - code containing business/domain logic
-`./src/adapters` - adapters to provide connectivity with databases etc.
-`./.env` - configuration values
-`./database.json` - `db-migrate` config
-`./docker-compose.yaml` - Docker compose setup with database and API service definitions
-`./jest.config.js` - Using jest for testing - here's it's config (i.e. automocks off)
-`./postgresql.config` - We're overriding some of the PostgreSQL default config values for better IO performance. Optimised for server with 16GB of ram like my machine. Fine tune if your's is different.
-`./QUERRIES.md` - A notebook I have used to write down my SQL queries
+- `./migrations` - contains database initialisation scripts and SQL for db-migrate
+- `./scripts` - fixture data generation scripts
+- `./src/domain` - code containing business/domain logic
+- `./src/adapters` - adapters to provide connectivity with databases etc.
+- `./.env` - configuration values
+- `./database.json` - `db-migrate` config
+- `./docker-compose.yaml` - Docker compose setup with database and API service definitions
+- `./jest.config.js` - Using jest for testing - here's it's config (i.e. automocks off)
+- `./postgresql.config` - We're overriding some of the PostgreSQL default config values for better IO performance. Optimised for server with 16GB of ram like my machine. Fine tune if your's is different.
+- `./QUERRIES.md` - A notebook I have used to write down my SQL queries
 
 ## Application initialisation
 
