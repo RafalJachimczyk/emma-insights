@@ -36,7 +36,7 @@ Retrieving/querying large amounts of data in a normalised and relational databas
 
 The initial proposal is to create a separate de-normalised table that stores insights. I was originally planning to build the service around kafka streams, where messages would be picked by a separate microservice and store the de-normalised data in separate database.
 
-However, after an email exchange with Antonio I decided to go for another, sipler approach. Use the same database, but a new de-normalised table. 
+However, that design had flaws - namely - the microservice would have to query the db quite heavily over the network - that's bad for number of reasons. 
 
 Instead of using kafka streams to process the data that needs to be stored in Insights database, we'll use triggers that are executed when and INSERT query is performed on Transactions table. Trigger function would pick up a Transaction record and execute an UPSERT query on Insights table. 
 
@@ -161,6 +161,7 @@ Take a note on the response time from postgres for each of the queries. In my ca
 - Add additional index on InsightsDaily
 - Calculate monthly totals
 - Partition table by months
+- Move Insights table to a separate database and use kafka streams to make copy of incoming transactions. We could still use triggers to generate Insights, but this way, the Transactions DB will not be hammered by the triggers. And everyone would be happy 💆‍♀️.
 
 # Code structure & architcture
 
