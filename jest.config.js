@@ -16,5 +16,11 @@ module.exports = {
       '^.+\\.(ts|tsx)?$': 'ts-jest',
       "^.+\\.(js|jsx)$": 'babel-jest'
     },
-    transformIgnorePatterns: []
+    testMatch: ['**/*.test.ts'],
+    transformIgnorePatterns: [],
+    globals: {
+      'ts-jest': {
+        tsconfig: '<rootDir>/src/tsconfig.json'
+      }
+    }
 };

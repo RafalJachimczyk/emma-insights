@@ -108,11 +108,21 @@ The script genrates realistic data for the `User` <-> `Transaction` <-> `Merchan
 
 Note: When Transactions are INSERTed, the trigger function called `insert_daily_insight()` is executed. 
 
-Run `npm run generate:fixtures` to insert A LOT of records into your DB. It will take a moment to insert. 
+You can polulate the DB with fixture data by running
+```
+npm run generate:fixtures
+``` 
+It will take a while. On my Mac it took 2 hours to populate 10 milion entries. You can change the number of records to insert by amending the 
+```
+await insertTransactions(1000, 100000, users, merchants, bar);
+```
+line in `insertTransactions.js` file. 
 
 Once you're done we can take a look at the below queries:
 
-`SELECT * FROM public."InsightsDaily" ORDER BY date DESC LIMIT 10;`
+```
+SELECT * FROM public."InsightsDaily" ORDER BY date DESC LIMIT 10;
+```
 
 Here's the result of a query on our pre-aggregated InsightsDaily table. Take a note of one of the UUIDs for a user, and then run the below queries: 
 
@@ -165,6 +175,23 @@ Since most of the hard work would be done by the Database and triggers the code 
 The Insights API will intentionally only return essential data, and the Db layer code will not perform ANY Joins. It will be down to client to obtain User and Merchant data from the respective APIs (out of scope for this exercise).
 
 Using jest as a testing framework, as it has all the features that I will need. And I like it more over Mocha+Chai. 
+
+# Development + Testing
+
+Before running tests make sure you followed steps in the **Application initialisation** section.
+
+To run all tests fire away the below:
+```
+npm run test
+```
+
+This will run e2e, integration and unit tests. If you have not started the app yet, the e2e tests will fail.
+
+To start the API server run:
+```
+npm run build
+npm run start
+```
 
 ### TODO:
 - Add Linter / Prettier
