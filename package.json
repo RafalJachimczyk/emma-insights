@@ -8,6 +8,9 @@
     "main": "index.js",
     "scripts": {
         "test": "jest --coverage",
+        "test:unit": "jest --testRegex='unit.test.ts$'",
+        "test:int": "jest --testRegex='int.test.ts$'",
+        "test:e2e": "jest --testRegex='e2e.test.ts$'",
         "db:create": "./node_modules/db-migrate/bin/db-migrate db:create dev",
         "db:reset": "./node_modules/db-migrate/bin/db-migrate reset",
         "db:up": "./node_modules/db-migrate/bin/db-migrate up",
@@ -24,14 +27,18 @@
         "pg-format": "^1.0.4"
     },
     "devDependencies": {
+        "@babel/preset-env": "^7.15.6",
         "@types/jest": "^27.0.1",
         "@types/uuid": "^8.3.1",
+        "babel-jest": "^27.2.0",
         "cli-progress": "^3.9.1",
         "db-migrate": "^0.11.12",
         "db-migrate-pg": "^1.2.2",
         "jest": "^27.2.0",
         "mocker-data-generator": "^2.12.0",
+        "node-fetch": "^3.0.0",
         "prettier": "2.4.0",
+        "regenerator-runtime": "^0.13.9",
         "ts-jest": "^27.0.5",
         "typescript": "^4.4.3"
     }

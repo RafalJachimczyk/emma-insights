@@ -9,13 +9,12 @@ module.exports = {
     testEnvironment: 'node',
     verbose: true,
     roots: [
-        "<rootDir>/src"
-    ],
-    testMatch: [
-        "**/__tests__/**/*.+(ts|tsx|js)",
-        "**/?(*.)+(spec|test).+(ts|tsx|js)"
+        "<rootDir>/src",
+        "<rootDir>/test"
     ],
     transform: {
-        "^.+\\.(ts|tsx)$": "ts-jest"
+      '^.+\\.(ts|tsx)?$': 'ts-jest',
+      "^.+\\.(js|jsx)$": 'babel-jest'
     },
+    transformIgnorePatterns: []
 };
