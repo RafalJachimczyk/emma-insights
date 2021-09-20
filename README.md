@@ -156,7 +156,7 @@ ORDER BY percentile_rank DESC;
 
 Take a note on the response time from postgres for each of the queries. In my case (10 milion records) the first query responds in ~800 ms. The second one, based on pre-aggregated daily amounts responds in ~70 ms. That's an order of magnitude better - pretty good!
 
-# Further optimalizations possible #
+# Further optimalizations possible
 
 - Add additional index on InsightsDaily
 - Calculate monthly totals
@@ -196,3 +196,5 @@ npm run start
 
 ### TODO:
 - Add Linter / Prettier
+- Use connection pooling in insertFixtures
+- Change TS transpiled JS files to dist/src

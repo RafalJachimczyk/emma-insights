@@ -1,6 +1,7 @@
 import mountRouting from './index';
 
 import { get as getInsightHandler } from '../handlers/insights';
+import { post as postTransactionsHandler } from '../handlers/transactions';
 
 describe('Express - routing', () => {
     let app;
@@ -11,6 +12,7 @@ describe('Express - routing', () => {
             post: jest.fn(),
         };
     });
+
     it('should be a function', () => {
         expect(mountRouting).toBeInstanceOf(Function);
     });
@@ -20,4 +22,10 @@ describe('Express - routing', () => {
 
         expect(app.get).toHaveBeenCalledWith('/insights', getInsightHandler);
     });
+
+    it('should register the transactions POST endpoint', () => {
+        mountRouting(app);
+
+        expect(app.post).toHaveBeenCalledWith('/transactions', postTransactionsHandler);
+    });    
 });

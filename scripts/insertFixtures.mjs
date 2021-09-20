@@ -40,11 +40,11 @@ try {
 
 
 
-const insertTransactions = async (batchSize, batchNumber, users, merchants, bar) => {
+const insertTransactions = async (batchSize, numBatches, users, merchants, bar) => {
 
-    bar.start(batchNumber * batchSize, 0);
+    bar.start(numBatches * batchSize, 0);
     try {
-        for (let i = 1; i <= batchNumber; i++) {
+        for (let i = 1; i <= numBatches; i++) {
 
             // console.log(`[${i}] Generating transactions: ...`);
             const transactions = await generateTransactions(users, merchants, batchSize);
@@ -53,13 +53,17 @@ const insertTransactions = async (batchSize, batchNumber, users, merchants, bar)
             })
 
             // console.log(`[${i}] Establishing Postgress connection: ...`);
-            const client = new pg.Client()
-            await client.connect()
+            const pool = new pg.Pool({
+                max: 20,
+                idleTimeoutMillis: 30000,
+                connectionTimeoutMillis: 2000,
+            })
+            const client = await pool.connect()
 
             // console.log(`[${i}] Inserting transactions: ...`)
             await client.query(format('INSERT INTO public."Transactions" (id, user_id, date, amount, description, merchant_id) VALUES %L', transactionsPrepared), []);
 
-            await client.end();
+            client.release()
             bar.update(batchSize * i)
         }
     } catch (err) {

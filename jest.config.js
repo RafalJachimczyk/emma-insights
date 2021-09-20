@@ -16,7 +16,7 @@ module.exports = {
       '^.+\\.(ts|tsx)?$': 'ts-jest',
       "^.+\\.(js|jsx)$": 'babel-jest'
     },
-    testMatch: ['**/*.test.ts'],
+    testRegex: "^.+\\.test.(ts|tsx)?$",
     transformIgnorePatterns: [],
     globals: {
       'ts-jest': {
