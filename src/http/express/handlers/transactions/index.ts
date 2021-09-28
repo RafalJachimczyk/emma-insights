@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 
 import { storeTransactions, Transaction } from '../../../../domain/transactions'
 
-const post = (req: Request, _res: Response, _next: NextFunction) => {
+const post = async(req: Request, res: Response, _next: NextFunction) => {
 
     let transactions: Array<Transaction> = req.body.map((transactionRaw): Transaction => {
         return {
@@ -14,7 +14,17 @@ const post = (req: Request, _res: Response, _next: NextFunction) => {
         }
     });
 
-    storeTransactions(transactions);
+    let stored =  await storeTransactions(transactions);
+    res.status(201);
+
+    res.json(generateResponseBody(stored));
+
+};
+
+const generateResponseBody = (accepted) => {
+    return {
+        accepted
+    };
 };
 
 export { post };

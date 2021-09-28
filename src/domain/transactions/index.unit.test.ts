@@ -1,21 +1,21 @@
 import { mocked } from 'ts-jest/utils'
 
-import { storeTransactionsInDatabase } from '../../adapter/postgress/transactions';
-jest.mock('../../adapter/postgress/transactions');
-const mockStoreTransactionsInDatabase = mocked(storeTransactionsInDatabase, true)
-
-
-
 import { storeTransactions, Transaction } from './index';
+
+import { insertTransactions } from '../../adapter/postgress/transactions';
+jest.mock('../../adapter/postgress/transactions');
+const mockInsertTransactions = mocked(insertTransactions, true)
+
+
 
 describe('transactions domain', () => {
 
 
     afterEach(function resetMocks() {
-        mockStoreTransactionsInDatabase.mockReset()
+        mockInsertTransactions.mockReset()
     })
 
-    it('should store transactions in postgress', () => {
+    it('should store transactions in postgress', async () => {
         let fakeTransactions: Array<Transaction> = [
             {
                 userId: 'c36da3d0-6f40-4203-a4c7-9b6692f1bc28',
@@ -26,11 +26,10 @@ describe('transactions domain', () => {
             },
         ];
 
+        mockInsertTransactions.mockResolvedValueOnce(1);
         
-        mockStoreTransactionsInDatabase.mockReturnValueOnce(1);
-        
-        let storedTransactionsNumber = storeTransactions(fakeTransactions);
-        expect(mockStoreTransactionsInDatabase).toHaveBeenCalledWith(fakeTransactions);
+        let storedTransactionsNumber = await storeTransactions(fakeTransactions);
+        expect(mockInsertTransactions).toHaveBeenCalledWith(fakeTransactions);
         expect(storedTransactionsNumber).toEqual(1);
     });
 });

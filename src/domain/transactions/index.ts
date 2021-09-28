@@ -1,7 +1,7 @@
-import { storeTransactionsInDatabase } from '../../adapter/postgress/transactions';
+import { insertTransactions } from '../../adapter/postgress/transactions';
 
-const storeTransactions = (transactions: Transaction[]): number => {
-    return storeTransactionsInDatabase(transactions);
+const storeTransactions = async (transactions: Transaction[]): Promise<number> => {
+    return await insertTransactions(transactions);
 };
 
 export { storeTransactions };

@@ -1,6 +1,11 @@
 import fetch from 'node-fetch';
-import { v4 } from 'uuid';
+import pg from 'pg';
 import { config } from 'dotenv';
+
+jest.dontMock('pg');
+
+import { generateUsers, generateMerchants, generateTransactions } from '../../scripts/generateFixtures';
+import { insertUsers, insertMerchants } from '../../scripts/insertFixtures';
 
 config();
 
@@ -20,26 +25,74 @@ describe('Transactions API', () => {
         // });
 
         it('Should accept a single transaction when a POST request made', async () => {
-            const payload = [
-                {
-                    user_id: 'c36da3d0-6f40-4203-a4c7-9b6692f1bc28',
-                    merchant_id: '7ff2cf83-1972-437a-b6d5-a9f438a787e0',
-                    date: '2011-10-05T14:48:00.000Z',
-                    amount: 11.21,
-                    description: 'Venti Latte',
-                },
-            ];
+            let users = await generateUsers(1);
+            let merchants = await generateMerchants(1);
+
+            let usersPrepared = await buildPreparedUsers(users);
+            let merchantsPrepared = await buildPreparedMerchants(merchants);
+
+            const pool = new pg.Pool({
+                max: 20,
+                idleTimeoutMillis: 30000,
+                connectionTimeoutMillis: 2000,
+            });
+            const client = await pool.connect();
+
+            await insertUsers(client, usersPrepared);
+            await insertMerchants(client, merchantsPrepared)
+
+            await client.release();
+
+            let transactionsPrepared = await buildPreparedTransactions(users, merchants, 1);
+
+            const payload = transactionsPrepared.map((transaction) => {
+                return {
+                    user_id: transaction[1],
+                    merchant_id: transaction[5],
+                    date: transaction[2],
+                    amount: transaction[3],
+                    description: transaction[4]
+                };
+            });
 
             const response = await fetch(apiUrl, {
                 method: 'post',
                 body: JSON.stringify(payload),
-                headers: {'Content-Type': 'application/json'}
-
+                headers: { 'Content-Type': 'application/json' },
             });
-            // const res = await response.json;
+            const res = await response.json();
 
             expect(response.status).toEqual(201); //created
-            expect(response.body).toEqual({ accepted: 1 });
+            expect(res).toEqual({ accepted: 1 });
         });
     });
 });
+
+const buildPreparedUsers = async (users) => {
+    var usersPrepared = users.map((user) => {
+        return [user.id, user.first_name, user.last_name];
+    });
+    return usersPrepared;
+};
+
+const buildPreparedMerchants = async (merchants) => {
+    var merchantsPrepared = merchants.map((merchant) => {
+        return [merchant.id, merchant.display_name, merchant.icon_url, merchant.funny_gif_url];
+    });
+    return merchantsPrepared;
+};
+
+const buildPreparedTransactions = async (users, merchants, num: number) => {
+    const transactions = await generateTransactions(users, merchants, num);
+    var transactionsPrepared = transactions.map((transaction) => {
+        return [
+            transaction.id,
+            transaction.user.id,
+            transaction.date,
+            transaction.amount,
+            transaction.description,
+            transaction.merchant.id,
+        ];
+    });
+    return transactionsPrepared;
+};

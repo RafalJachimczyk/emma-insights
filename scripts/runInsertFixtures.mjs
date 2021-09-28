@@ -5,7 +5,7 @@ import pg from 'pg'
 import dotenv from 'dotenv'
 import cliProgress from 'cli-progress';
 
-import { generateUsers, generateMerchants, generateTransactions } from './generateFixtures.mjs'
+import { generateUsers, generateMerchants, generateTransactions } from './generateFixtures.js'
 
 dotenv.config();
 
@@ -20,25 +20,26 @@ var merchantsPrepared = merchants.map((merchant) => {
     return [merchant.id, merchant.display_name, merchant.icon_url, merchant.funny_gif_url]
 })
 
-
-
-
 try {
-    const client = new pg.Client()
-    await client.connect()
 
-    await client.query(format('INSERT INTO public."Users" (id, first_name, last_name) VALUES %L', usersPrepared), []);
+    const pool = new pg.Pool({
+        max: 20,
+        idleTimeoutMillis: 30000,
+        connectionTimeoutMillis: 2000,
+    })
+    const client = await pool.connect()
 
-    await client.query(format('INSERT INTO public."Merchants" (id, display_name, icon_url, funny_gif_url) VALUES %L', merchantsPrepared), []);
+    await insertUsers(client, usersPrepared);
 
-    await client.end();
+    await insertMerchants(client, merchantsPrepared);
+
+    client.release();
+
+
 } catch (err) {
     console.log('Error when adding users and merchants!');
     throw err;
 }
-
-
-
 
 const insertTransactions = async (batchSize, numBatches, users, merchants, bar) => {
 
@@ -61,7 +62,8 @@ const insertTransactions = async (batchSize, numBatches, users, merchants, bar) 
             const client = await pool.connect()
 
             // console.log(`[${i}] Inserting transactions: ...`)
-            await client.query(format('INSERT INTO public."Transactions" (id, user_id, date, amount, description, merchant_id) VALUES %L', transactionsPrepared), []);
+            let preparedQuery = format('INSERT INTO public."Transactions" (id, user_id, date, amount, description, merchant_id) VALUES %L', transactionsPrepared);
+            await client.query(preparedQuery, []);
 
             client.release()
             bar.update(batchSize * i)
@@ -75,8 +77,7 @@ const insertTransactions = async (batchSize, numBatches, users, merchants, bar) 
 
 const bar = new cliProgress.SingleBar({});
 
-await insertTransactions(1000, 100000, users, merchants, bar);
+await insertTransactions(2, 100000, users, merchants, bar);
 
 
 console.log(`Done! 🎉`);
-
