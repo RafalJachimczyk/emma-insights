@@ -1,6 +1,4 @@
-#!/usr/bin/env node
-
-import { mocker } from 'mocker-data-generator';
+const { mocker } = require('mocker-data-generator');
 
 var user = {
     id: {
@@ -95,7 +93,7 @@ const generateTransactions = async (users, merchants, num) => {
     });
 };
 
-export {
+module.exports = {
     generateMerchants,
     generateUsers,
     generateTransactions

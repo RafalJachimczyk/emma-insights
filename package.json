@@ -18,7 +18,7 @@
         "db:reset": "./node_modules/db-migrate/bin/db-migrate reset",
         "db:up": "./node_modules/db-migrate/bin/db-migrate up",
         "db:down": "./node_modules/db-migrate/bin/db-migrate down",
-        "generate:fixtures": "./scripts/insertFixtures.mjs",
+        "generate:fixtures": "./scripts/runInsertFixtures.mjs",
         "prettier": "prettier 'src/**/*.js'",
         "prettier:fix": "prettier --write 'src/**/*.js'"
     },

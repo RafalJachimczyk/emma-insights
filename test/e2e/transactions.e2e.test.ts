@@ -4,7 +4,7 @@ import { config } from 'dotenv';
 
 jest.dontMock('pg');
 
-import { generateUsers, generateMerchants, generateTransactions } from '../../scripts/generateFixtures';
+import { generateUsers, generateMerchants, generateTransactions } from '../../scripts/generateFixtures.js';
 import { insertUsers, insertMerchants } from '../../scripts/insertFixtures';
 
 config();

@@ -5,7 +5,11 @@ import pg from 'pg'
 import dotenv from 'dotenv'
 import cliProgress from 'cli-progress';
 
-import { generateUsers, generateMerchants, generateTransactions } from './generateFixtures.js'
+import generateFixtures from './generateFixtures.js'
+import insertFixtures from './insertFixtures.js'
+
+const { generateUsers, generateMerchants, generateTransactions } = generateFixtures;
+const { insertUsers, insertMerchants } = insertFixtures;
 
 dotenv.config();
 
@@ -77,7 +81,6 @@ const insertTransactions = async (batchSize, numBatches, users, merchants, bar) 
 
 const bar = new cliProgress.SingleBar({});
 
-await insertTransactions(2, 100000, users, merchants, bar);
-
+await insertTransactions(1000, 10000, users, merchants, bar);
 
 console.log(`Done! 🎉`);
