@@ -3,9 +3,10 @@ import pg from 'pg';
 import { config } from 'dotenv';
 
 jest.dontMock('pg');
+jest.setTimeout(30000);
 
-import { generateUsers, generateMerchants, generateTransactions } from '../../scripts/generateFixtures.js';
-import { insertUsers, insertMerchants } from '../../scripts/insertFixtures';
+import { generateUsers, generateMerchants, generateTransactions } from '../../scripts/generateFixtures';
+import { insertUsers, insertMerchants, deleteUser, deleteMerchant, deleteTransaction } from '../../scripts/postgressFixtures';
 
 config();
 
@@ -13,6 +14,54 @@ describe('Transactions API', () => {
     const apiUrl: string = `http://${process.env.API_HOSTNAME}:${process.env.API_PORT}/transactions`;
 
     describe('POST', () => {
+        let users;
+        let merchants;
+        let usersPrepared;
+        let merchantsPrepared;
+        let transactionsPrepared;
+
+        beforeEach(async function setupTestFixtures() {
+            users = await generateUsers(1);
+            merchants = await generateMerchants(1);
+
+            usersPrepared = await buildPreparedUsers(users);
+            merchantsPrepared = await buildPreparedMerchants(merchants);
+
+            const pool = new pg.Pool({
+                max: 20,
+                idleTimeoutMillis: 300000,
+                connectionTimeoutMillis: 2000,
+            });
+            const client = await pool.connect();
+
+            await insertUsers(client, usersPrepared);
+            await insertMerchants(client, merchantsPrepared);
+            await client.release();
+            await pool.end();
+
+            transactionsPrepared = await buildPreparedTransactions(users, merchants, 1);
+        });
+
+        afterEach(async function cleanupTestFixtures() {
+            const pool = new pg.Pool({
+                max: 20,
+                idleTimeoutMillis: 300000,
+                connectionTimeoutMillis: 2000,
+            });
+            const client = await pool.connect();
+            for (let transaction of transactionsPrepared) {
+                deleteTransaction(client, transaction[0]);
+            }
+            for (let user of users) {
+                deleteUser(client, user.id);
+            }
+            for (let merchant of merchants) {
+                deleteMerchant(client, merchant.id);
+            }
+            await client.release();
+            await pool.end();
+        });
+
         // it('Should respond with 422 Unprocessable Entity if the posted transaction is invalid format', async () => {
         //     const payload = "I'm not a JSON!";
 
@@ -25,33 +74,13 @@ describe('Transactions API', () => {
         // });
 
         it('Should accept a single transaction when a POST request made', async () => {
-            let users = await generateUsers(1);
-            let merchants = await generateMerchants(1);
-
-            let usersPrepared = await buildPreparedUsers(users);
-            let merchantsPrepared = await buildPreparedMerchants(merchants);
-
-            const pool = new pg.Pool({
-                max: 20,
-                idleTimeoutMillis: 30000,
-                connectionTimeoutMillis: 2000,
-            });
-            const client = await pool.connect();
-
-            await insertUsers(client, usersPrepared);
-            await insertMerchants(client, merchantsPrepared)
-
-            await client.release();
-
-            let transactionsPrepared = await buildPreparedTransactions(users, merchants, 1);
-
             const payload = transactionsPrepared.map((transaction) => {
                 return {
                     user_id: transaction[1],
                     merchant_id: transaction[5],
                     date: transaction[2],
                     amount: transaction[3],
-                    description: transaction[4]
+                    description: transaction[4],
                 };
             });
 
