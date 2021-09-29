@@ -9,10 +9,10 @@ import {
     deleteTransaction,
 } from '../../scripts/postgressFixtures';
 
-export const insertTestFixtures = async () => {
+export const insertTestFixtures = async (numUsers: number = 1, numMerchants: number = 1, numTransactions: number = 1) => {
     return new Promise(async (resolve, _reject) => {
-        let users = await generateUsers(1);
-        let merchants = await generateMerchants(1);
+        let users = await generateUsers(numUsers);
+        let merchants = await generateMerchants(numMerchants);
 
         let usersPrepared = await buildPreparedUsers(users);
         let merchantsPrepared = await buildPreparedMerchants(merchants);
@@ -29,11 +29,13 @@ export const insertTestFixtures = async () => {
         await client.release();
         await pool.end();
 
-        let transactionsPrepared = await buildPreparedTransactions(users, merchants, 1);
+        let transactions = await generateTransactions(users, merchants, numTransactions);
+        let transactionsPrepared = await buildPreparedTransactions(transactions);
 
         resolve({
             users,
             merchants,
+            transactions,
             usersPrepared,
             merchantsPrepared,
             transactionsPrepared,
@@ -64,7 +66,6 @@ export const deleteTestFixtures = async (fixtures) => {
     });
 };
 
-
 const buildPreparedUsers = async (users) => {
     var usersPrepared = users.map((user) => {
         return [user.id, user.first_name, user.last_name];
@@ -79,8 +80,7 @@ const buildPreparedMerchants = async (merchants) => {
     return merchantsPrepared;
 };
 
-const buildPreparedTransactions = async (users, merchants, num: number) => {
-    const transactions = await generateTransactions(users, merchants, num);
+const buildPreparedTransactions = async (transactions) => {
     var transactionsPrepared = transactions.map((transaction) => {
         return [
             transaction.id,

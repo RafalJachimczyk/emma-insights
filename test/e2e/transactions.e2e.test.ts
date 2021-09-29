@@ -7,7 +7,6 @@ import { insertTestFixtures, deleteTestFixtures} from '../utils/fixtures'
 jest.dontMock('pg');
 jest.setTimeout(30000);
 
-
 config();
 
 
@@ -15,11 +14,6 @@ describe('Transactions API', () => {
     const apiUrl: string = `http://${process.env.API_HOSTNAME}:${process.env.API_PORT}/transactions`;
 
     describe('POST', () => {
-        // let users;
-        // let merchants;
-        // let usersPrepared;
-        // let merchantsPrepared;
-        // let transactionsPrepared;
 
         let fixtures;
 
