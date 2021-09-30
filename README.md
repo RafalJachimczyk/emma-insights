@@ -128,31 +128,43 @@ SELECT * FROM public."InsightsDaily" ORDER BY date DESC LIMIT 10;
 Here's the result of a query on our pre-aggregated InsightsDaily table. Take a note of one of the UUIDs for a user, and then run the below queries: 
 
 ```
-SELECT
-SUM(t.amount) total_amount,
-PERCENT_RANK() over (
-ORDER BY SUM(t.amount)
-) percentile_rank,
-t.user_id,
-t.merchant_id
-FROM public."Transactions" t
-WHERE t.user_id = '4a91e5b1-f676-545f-9e38-d6e08139c3c2'
-GROUP BY t.user_id, t.merchant_id
-ORDER BY percentile_rank DESC;
+SELECT *
+FROM (
+    SELECT
+        SUM(t.amount) total_amount,
+        PERCENT_RANK() over (
+            PARTITION BY t.merchant_id
+            ORDER BY SUM(t.amount)
+        ) percentile_rank,
+        t.user_id,
+        t.merchant_id,
+        t.date
+    FROM public."Transactions" t
+    WHERE t.date = '2021-09-29'
+    GROUP BY t.user_id, t.merchant_id, t.date
+    ORDER BY percentile_rank DESC
+) as all_ranks
+WHERE all_ranks.user_id = 'edd6f248-c155-55a9-bdb9-4c7b5dbf4665';
 ```
 
 ```
-SELECT
-SUM(i.amount) total_amount,
-PERCENT_RANK() over (
-ORDER BY SUM(i.amount)
-) percentile_rank,
-i.user_id,
-i.merchant_id
-FROM public."InsightsDaily" i
-WHERE i.user_id = '4a91e5b1-f676-545f-9e38-d6e08139c3c2'
-GROUP BY i.user_id, i.merchant_id
-ORDER BY percentile_rank DESC;
+SELECT *
+FROM (
+    SELECT
+        SUM(i.amount) total_amount,
+        PERCENT_RANK() over (
+            PARTITION BY i.merchant_id
+            ORDER BY SUM(i.amount)
+        ) percentile_rank,
+        i.user_id,
+        i.merchant_id,
+        i.date
+    FROM public."InsightsDaily" i
+    WHERE i.date = '2021-09-29'
+    GROUP BY i.user_id, i.merchant_id, i.date
+    ORDER BY percentile_rank DESC
+) as all_ranks
+WHERE user_id = 'edd6f248-c155-55a9-bdb9-4c7b5dbf4665';
 ```
 
 Take a note on the response time from postgres for each of the queries. In my case (10 milion records) the first query responds in ~800 ms. The second one, based on pre-aggregated daily amounts responds in ~70 ms. That's an order of magnitude better - pretty good!
