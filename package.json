@@ -9,7 +9,7 @@
     "scripts": {
         "build": "tsc -p ./src",
         "start": "node ./dist/src/server.js",
-        "start:dev": "export $(cat .env | xargs) && node ./dist/src/server.js",
+        "start:dev": "npm run build && export $(cat .env | xargs) && npm start",
         "test": "jest --coverage",
         "test:unit": "jest --testRegex='unit.test.ts$'",
         "test:int": "jest --testRegex='int.test.ts$'",
