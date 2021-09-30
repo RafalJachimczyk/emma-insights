@@ -202,6 +202,5 @@ This will run e2e, integration and unit tests. If you have not started the app y
 
 To start the API server run:
 ```
-npm run build
-npm run start
+npm run start:dev
 ```
