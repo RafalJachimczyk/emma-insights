@@ -81,7 +81,6 @@ Pre-computing daily amounts massively speeds up the percentile calculations, as 
 - `./docker-compose.yaml` - Docker compose setup with database and API service definitions
 - `./jest.config.js` - Using jest for testing - here's it's config (i.e. automocks off)
 - `./postgresql.config` - We're overriding some of the PostgreSQL default config values for better IO performance. Optimised for server with 16GB of ram like my machine. Fine tune if your's is different.
-- `./QUERIES.md` - A notebook I have used to write down my SQL queries
 
 ## Application initialisation
 
@@ -206,8 +205,3 @@ To start the API server run:
 npm run build
 npm run start
 ```
-
-### TODO:
-- Add Linter / Prettier
-- Use connection pooling in insertFixtures
-- Change TS transpiled JS files to dist/src
