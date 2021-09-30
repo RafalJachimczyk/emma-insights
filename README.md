@@ -75,12 +75,13 @@ Pre-computing daily amounts massively speeds up the percentile calculations, as 
 - `./scripts` - fixture data generation scripts
 - `./src/domain` - code containing business/domain logic
 - `./src/adapters` - adapters to provide connectivity with databases etc.
+- `./src/http` - http port with express handlers
 - `./.env` - configuration values
 - `./database.json` - `db-migrate` config
 - `./docker-compose.yaml` - Docker compose setup with database and API service definitions
 - `./jest.config.js` - Using jest for testing - here's it's config (i.e. automocks off)
 - `./postgresql.config` - We're overriding some of the PostgreSQL default config values for better IO performance. Optimised for server with 16GB of ram like my machine. Fine tune if your's is different.
-- `./QUERRIES.md` - A notebook I have used to write down my SQL queries
+- `./QUERIES.md` - A notebook I have used to write down my SQL queries
 
 ## Application initialisation
 
@@ -116,7 +117,7 @@ It will take a while. On my Mac it took 2 hours to populate 10 milion entries. Y
 ```
 await insertTransactions(1000, 100000, users, merchants, bar);
 ```
-line in `insertTransactions.js` file. 
+line in `runInsertTransactions.js` file. 
 
 Once you're done we can take a look at the below queries:
 
