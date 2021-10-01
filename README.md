@@ -1,4 +1,4 @@
-TL;DR;
+# TL;DR;
 
 The below commands will initialise database, start the development version of server (a.k.a local) and run all suites of tests (unit, integration and e2e).
 
@@ -14,7 +14,7 @@ npm run test
 
 E2E tests are documenting the behaviour of the api, but in short what happens is :
 - We generate and insert some users and merchants and store them in DB
-- We use the Transactions API to insert transactions
+- We use the Transactions API to insert transactions (DB triggers add Insights entries)
 - We make requests to Insights API to see if the insights are correct and what we expect
 
 
