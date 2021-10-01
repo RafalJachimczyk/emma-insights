@@ -236,7 +236,10 @@ describe('Insights API', () => {
             const responseInsights = responseJson as Array<Insight>;
 
             expect(statusCode).toEqual(200);
-            expect(responseInsights.sort()).toEqual(expectedResponseJson.sort());
+            expect(responseInsights[0].percentileRank).toEqual(expectedResponseJson[0].percentileRank);
+            expect(responseInsights[1].percentileRank).toEqual(expectedResponseJson[1].percentileRank);
+            expect(responseInsights[0].userId).toEqual(expectedResponseJson[0].userId);
+            expect(responseInsights[1].userId).toEqual(expectedResponseJson[1].userId);
 
             // await deleteTestFixtures(fixtures);
         });
