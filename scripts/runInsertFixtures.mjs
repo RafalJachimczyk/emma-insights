@@ -6,7 +6,7 @@ import dotenv from 'dotenv'
 import cliProgress from 'cli-progress';
 
 import generateFixtures from './generateFixtures.js'
-import insertFixtures from './insertFixtures.js'
+import insertFixtures from './postgressFixtures.js'
 
 const { generateUsers, generateMerchants, generateTransactions } = generateFixtures;
 const { insertUsers, insertMerchants } = insertFixtures;
@@ -23,15 +23,13 @@ var usersPrepared = users.map((user) => {
 var merchantsPrepared = merchants.map((merchant) => {
     return [merchant.id, merchant.display_name, merchant.icon_url, merchant.funny_gif_url]
 })
-
+const pool = new pg.Pool({
+    max: 20,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 2000,
+})
+const client = await pool.connect()
 try {
-
-    const pool = new pg.Pool({
-        max: 20,
-        idleTimeoutMillis: 30000,
-        connectionTimeoutMillis: 2000,
-    })
-    const client = await pool.connect()
 
     await insertUsers(client, usersPrepared);
 
@@ -42,6 +40,7 @@ try {
 
 } catch (err) {
     console.log('Error when adding users and merchants!');
+    client.release();
     throw err;
 }
 
