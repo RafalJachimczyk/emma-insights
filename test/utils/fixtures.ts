@@ -52,7 +52,6 @@ export const deleteTestFixtures = async (fixtures) => {
         });
         const client = await pool.connect();
         for (let transaction of fixtures.transactionsPrepared) {
-            console.log({transaction})
             await deleteTransaction(client, transaction[0]);
         }
         for (let user of fixtures.users) {
