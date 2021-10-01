@@ -21,21 +21,6 @@ describe('Transactions API', () => {
             fixtures = await insertTestFixtures();
         });
 
-        afterEach(async function cleanupTestFixtures() {
-            await deleteTestFixtures(fixtures);
-        });
-
-        // it('Should respond with 422 Unprocessable Entity if the posted transaction is invalid format', async () => {
-        //     const payload = "I'm not a JSON!";
-
-        //     const response = await fetch(apiUrl, {
-        //         method: 'post',
-        //         body: payload,
-        //     });
-
-        //     expect(response.status).toEqual(415);
-        // });
-
         it('Should accept a single transaction when a POST request made', async () => {
             const payload = fixtures.transactionsPrepared.map((transaction) => {
                 return {
