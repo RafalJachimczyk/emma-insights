@@ -28,8 +28,10 @@ describe('Insights API', () => {
 
         let merchantId = fixtures.merchants[0].id;
 
+        //TODO: Fix fixtures cleanup. Use the id when inserting in db!
         const payload = [
             {
+                id: fixtures.transactions[0].id,
                 user_id: userOneId,
                 merchant_id: merchantId,
                 date: '2021-09-29',
@@ -37,6 +39,7 @@ describe('Insights API', () => {
                 description: fixtures.transactions[0].description,
             },
             {
+                id: fixtures.transactions[1].id,
                 user_id: userTwoId,
                 merchant_id: merchantId,
                 date: '2021-09-29',

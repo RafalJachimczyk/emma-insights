@@ -11,6 +11,7 @@ const pool = new Pool({
 const insertTransactions = async (transactions: Transaction[]): Promise<number> => {
     return new Promise<number>(async (resolve, reject) => {
         try {
+            //TODO: make sure we are using Pooling in an optimal way
             const client = await pool.connect();
 
             var transactionsPrepared = transactions.map((transaction) => {

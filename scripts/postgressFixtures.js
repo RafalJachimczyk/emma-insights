@@ -9,15 +9,15 @@ const insertMerchants = async (client, merchantsPrepared) => {
 }
 
 const deleteUser = async (client, userId) => {
-    return await client.query(format("DELETE FROM public.\"Users\" WHERE id = '%s'", userId), []);
+    await client.query(format("DELETE FROM public.\"Users\" WHERE id = '%s'", userId), []);
 }
 
 const deleteMerchant = async (client, merchantId) => {
-    return await client.query(format("DELETE FROM public.\"Merchants\" WHERE id = '%s'", merchantId), []);
+    await client.query(format("DELETE FROM public.\"Merchants\" WHERE id = '%s'", merchantId), []);
 }
 
 const deleteTransaction = async (client, transactionId) => {
-    return await client.query(format("DELETE FROM public.\"Transactions\" WHERE id = '%s'", transactionId), []);
+    await client.query(format("DELETE FROM public.\"Transactions\" WHERE id = '%s'", transactionId), []);
 }
 
 module.exports = {

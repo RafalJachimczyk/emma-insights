@@ -52,13 +52,14 @@ export const deleteTestFixtures = async (fixtures) => {
         });
         const client = await pool.connect();
         for (let transaction of fixtures.transactionsPrepared) {
-            deleteTransaction(client, transaction[0]);
+            console.log({transaction})
+            await deleteTransaction(client, transaction[0]);
         }
         for (let user of fixtures.users) {
-            deleteUser(client, user.id);
+            await deleteUser(client, user.id);
         }
         for (let merchant of fixtures.merchants) {
-            deleteMerchant(client, merchant.id);
+            await deleteMerchant(client, merchant.id);
         }
         await client.release();
         await pool.end();
