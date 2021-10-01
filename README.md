@@ -56,7 +56,7 @@ The initial proposal is to create a separate de-normalised table that stores ins
 
 However, that design had flaws - namely - the microservice would have to query the db quite heavily over the network - that's bad for number of reasons. 
 
-Instead of using kafka streams to process the data that needs to be stored in Insights database, we'll use triggers that are executed when and INSERT query is performed on Transactions table. Trigger function would pick up a Transaction record and execute an UPSERT query on Insights table. 
+Instead of using kafka streams to process the data that needs to be stored in Insights database, we'll use triggers that are executed when an INSERT query is performed on Transactions table. Trigger function would pick up a Transaction record and execute an UPSERT query on Insights table. 
 
 The logic of that function is to add all transactions for a given:
 - user_id
