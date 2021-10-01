@@ -26,7 +26,7 @@ var merchantsPrepared = merchants.map((merchant) => {
 const pool = new pg.Pool({
     max: 20,
     idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 2000,
+    connectionTimeoutMillis: 30000,
 })
 const client = await pool.connect()
 try {
@@ -60,7 +60,7 @@ const insertTransactions = async (batchSize, numBatches, users, merchants, bar) 
             const pool = new pg.Pool({
                 max: 20,
                 idleTimeoutMillis: 30000,
-                connectionTimeoutMillis: 2000,
+                connectionTimeoutMillis: 30000,
             })
             const client = await pool.connect()
 
