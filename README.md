@@ -8,7 +8,7 @@ docker-compose up
 npm run db:create
 npm run db:up
 
-npm start:dev
+npm run start:dev
 npm run test
 ```
 
